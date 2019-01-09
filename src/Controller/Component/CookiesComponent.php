@@ -69,7 +69,7 @@ class CookiesComponent extends Component
         }
 
         if (empty($this->_defaultConfig['path'])) {
-            $this->setConfig('path', $this->getController()->request->getAttribute('webroot'));
+            $this->setConfig('path', $this->getController()->getRequest()->getAttribute('webroot'));
         }
         if (empty($this->_defaultConfig['domain'])) {
             $this->setConfig('domain', $this->cookieDomain());
@@ -281,7 +281,7 @@ class CookiesComponent extends Component
      */
     public function cookieDomain()
     {
-        $host = $this->getController()->request->getUri()->getHost();
+        $host = $this->getController()->getRequest()->getUri()->getHost();
 
         return '.' . str_replace('www.', '', $host);
     }
