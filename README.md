@@ -10,7 +10,7 @@ CookiesComponent is a replacement for default and depricated **CookieComponent**
 
 ### Requirements
 - PHP >= 7.1.x
-- CakePHP >= 3.5.x
+- CakePHP >= 3.6.x
 
 ## Cookie name
 - Simple name: `mycookie`
