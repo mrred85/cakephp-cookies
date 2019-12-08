@@ -191,7 +191,7 @@ class CookiesComponent extends Component
         if (isset($_COOKIE[$parts->name])) {
             $value = $this->cookieRawValue($name, $decrypt);
             if (is_array($value)) {
-                if (strstr($name, '.') || Hash::check($value, $name)) {
+                if (strpos($name, '.') !== false || Hash::check($value, $name)) {
                     $value = Hash::get($value, $name);
                 }
             }
