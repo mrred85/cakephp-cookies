@@ -63,10 +63,7 @@ class CookiesComponent extends Component
          *   ...
          * ]
          */
-        $cookieKey = Configure::read('Security.cookieKey', null);
-        if ($cookieKey) {
-            $this->_defaultConfig['key'] = $cookieKey;
-        }
+        $this->_defaultConfig['key'] = Configure::read('Security.cookieKey', null);
 
         if (empty($this->_defaultConfig['path'])) {
             $this->setConfig('path', $this->getController()->getRequest()->getAttribute('webroot'));
