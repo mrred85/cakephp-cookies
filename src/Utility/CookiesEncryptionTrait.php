@@ -26,7 +26,7 @@ trait CookiesEncryptionTrait
     /**
      * Encryption key for Cookies Encryption Trait
      *
-     * @return string
+     * @return string|null
      */
     abstract protected function _getEncryptionKey();
 

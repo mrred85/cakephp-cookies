@@ -103,7 +103,7 @@ class CookiesComponent extends Component
 
     /**
      * @inheritdoc
-     * @param null|string $key Config Key
+     * @param string|null $key Config Key
      * @param mixed $default Cookie default (inherited;
      *   If has value and key is set, the key will return the value.
      *   If is true and no key provided will return the cookie config as object
@@ -132,11 +132,11 @@ class CookiesComponent extends Component
     /**
      * Encryption key for Cookies Encryption Trait
      *
-     * @return string
+     * @return string|null
      */
     protected function _getEncryptionKey()
     {
-        return (string)$this->_defaultConfig['key'];
+        return $this->_defaultConfig['key'];
     }
 
     /**
