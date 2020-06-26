@@ -28,14 +28,14 @@ trait CookiesEncryptionTrait
      *
      * @return string|null
      */
-    abstract protected function _getEncryptionKey();
+    abstract protected function _getEncryptionKey(): ?string;
 
     /**
      * Set internal salt
      *
      * @return void
      */
-    protected function setInternalSalt()
+    protected function setInternalSalt(): void
     {
         $this->internalSalt = substr(Security::getSalt(), 1, 9);
     }
@@ -47,7 +47,7 @@ trait CookiesEncryptionTrait
      * @param string|null $hMacSalt Cookie encryption salt
      * @return string
      */
-    protected function _encrypt($value, $hMacSalt = null)
+    protected function _encrypt($value, ?string $hMacSalt = null): string
     {
         $key = $this->_getEncryptionKey();
         if ($key) {
@@ -65,7 +65,7 @@ trait CookiesEncryptionTrait
      * @param string|null $hMacSalt Cookie encryption salt
      * @return mixed
      */
-    protected function _decrypt($value, $hMacSalt = null)
+    protected function _decrypt($value, ?string $hMacSalt = null)
     {
         $key = $this->_getEncryptionKey();
         if ($key) {

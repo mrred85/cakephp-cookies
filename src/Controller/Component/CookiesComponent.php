@@ -43,7 +43,7 @@ class CookiesComponent extends Component
      * @param array $config Cookies config
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -78,7 +78,7 @@ class CookiesComponent extends Component
      *
      * @return array
      */
-    public function implementedEvents()
+    public function implementedEvents(): array
     {
         return [];
     }
@@ -134,7 +134,7 @@ class CookiesComponent extends Component
      *
      * @return string|null
      */
-    protected function _getEncryptionKey()
+    protected function _getEncryptionKey(): ?string
     {
         return $this->_defaultConfig['key'];
     }
@@ -145,7 +145,7 @@ class CookiesComponent extends Component
      * @param bool $decrypt Decrypt cookies values
      * @return array
      */
-    public function list(bool $decrypt = false)
+    public function list(bool $decrypt = false): array
     {
         $cookies = [];
         foreach ((array)$_COOKIE as $name => $value) {
@@ -164,7 +164,7 @@ class CookiesComponent extends Component
      * @param string $name Cookie name
      * @return bool
      */
-    public function check(string $name)
+    public function check(string $name): bool
     {
         $parts = $this->cookieNameParts($name);
 
@@ -207,7 +207,7 @@ class CookiesComponent extends Component
      * @param bool $encrypt Cookie encrypt value
      * @return void
      */
-    public function write(string $name, $value, bool $encrypt = false)
+    public function write(string $name, $value, bool $encrypt = false): void
     {
         $parts = $this->cookieNameParts($name);
 
@@ -234,7 +234,7 @@ class CookiesComponent extends Component
      * @param string $name Cookie name
      * @return void
      */
-    public function delete(string $name)
+    public function delete(string $name): void
     {
         $parts = $this->cookieNameParts($name);
 
@@ -251,7 +251,7 @@ class CookiesComponent extends Component
      * @param string $name Cookie name
      * @return void
      */
-    public function remove(string $name)
+    public function remove(string $name): void
     {
         $parts = $this->cookieNameParts($name);
 
@@ -276,7 +276,7 @@ class CookiesComponent extends Component
      *
      * @return string
      */
-    public function cookieDomain()
+    public function cookieDomain(): string
     {
         $host = $this->getController()->getRequest()->getUri()->getHost();
 
@@ -334,7 +334,7 @@ class CookiesComponent extends Component
      * @param array $options Cookie options
      * @return void
      */
-    private function setCookie(string $name, $value, array $options)
+    private function setCookie(string $name, $value, array $options): void
     {
         setcookie(
             $name,
