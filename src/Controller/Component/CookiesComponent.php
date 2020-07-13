@@ -14,6 +14,7 @@ use Cake\Controller\Component;
 use Cake\Core\Configure;
 use Cake\I18n\Time;
 use Cake\Utility\Hash;
+use InvalidArgumentException;
 
 /**
  * @package App\Controller\Component
@@ -26,15 +27,20 @@ class CookiesComponent extends Component
     /**
      * Cookie default configuration.
      *
+     * maxAge: in seconds
+     * sameSite: None, Lax or Strict
+     *
      * @var array
      */
     protected $_defaultConfig = [
         'key' => null,
-        'expire' => 0,
+        'expires' => 0,
+        'maxAge' => null,
         'path' => '',
         'domain' => '',
         'secure' => false,
-        'httpOnly' => false
+        'httpOnly' => false,
+        'sameSite' => ''
     ];
 
     /**
@@ -63,7 +69,7 @@ class CookiesComponent extends Component
          *   ...
          * ]
          */
-        $this->_defaultConfig['key'] = Configure::read('Security.cookieKey', null);
+        $this->setConfig('key', Configure::read('Security.cookieKey', null));
 
         if (empty($this->_defaultConfig['path'])) {
             $this->setConfig('path', $this->getController()->getRequest()->getAttribute('webroot'));
@@ -94,7 +100,7 @@ class CookiesComponent extends Component
     {
         if (is_array($key)) {
             $this->_defaultConfig = array_merge($this->_defaultConfig, $key);
-        } elseif (is_string($key) && isset($this->_defaultConfig[$key])) {
+        } elseif (is_string($key) && array_key_exists($key, $this->_defaultConfig)) {
             $this->_defaultConfig[$key] = $value;
         }
 
@@ -115,7 +121,7 @@ class CookiesComponent extends Component
         $config = $this->_defaultConfig;
 
         if ($key) {
-            if (!isset($config[$key])) {
+            if (!array_key_exists($key, $config)) {
                 return $default;
             }
 
@@ -136,7 +142,7 @@ class CookiesComponent extends Component
      */
     protected function _getEncryptionKey(): ?string
     {
-        return $this->_defaultConfig['key'];
+        return $this->getConfig('key');
     }
 
     /**
@@ -209,6 +215,8 @@ class CookiesComponent extends Component
      */
     public function write(string $name, $value, bool $encrypt = false): void
     {
+        $this->validateName($name);
+
         $parts = $this->cookieNameParts($name);
 
         $raw = $this->cookieRawValue($parts->name);
@@ -225,7 +233,7 @@ class CookiesComponent extends Component
             $value = $this->_encrypt($value);
         }
 
-        $this->setCookie($parts->name, $value, $this->_defaultConfig);
+        $this->setCookie($parts->name, $value);
     }
 
     /**
@@ -239,9 +247,9 @@ class CookiesComponent extends Component
         $parts = $this->cookieNameParts($name);
 
         if (isset($_COOKIE[$parts->name])) {
-            $options = $this->_defaultConfig;
-            $options['expire'] = '-1 years';
-            $this->setCookie($parts->name, null, $options);
+            $this->setConfig('expires', '-1 years');
+            $this->setConfig('maxAge', 0);
+            $this->setCookie($parts->name, 'deleted');
         }
     }
 
@@ -281,6 +289,25 @@ class CookiesComponent extends Component
         $host = $this->getController()->getRequest()->getUri()->getHost();
 
         return '.' . str_replace('www.', '', $host);
+    }
+
+    /**
+     * Validates the cookie name
+     *
+     * @param string $name Name of the cookie
+     * @return void
+     * @throws \InvalidArgumentException
+     * @link https://tools.ietf.org/html/rfc2616#section-2.2 Rules for naming cookies.
+     */
+    protected function validateName(string $name): void
+    {
+        if (empty($name)) {
+            throw new InvalidArgumentException('The cookie name cannot be empty.');
+        }
+
+        if (preg_match("/[=,; \t\r\n\013\014]/", $name)) {
+            throw new InvalidArgumentException('The cookie name `' . $name . '` contains invalid characters.');
+        }
     }
 
     /**
@@ -330,20 +357,38 @@ class CookiesComponent extends Component
      * Create the cookie.
      *
      * @param string $name Cookie name
-     * @param mixed $value Cookie value
-     * @param array $options Cookie options
+     * @param string $value Cookie value
      * @return void
      */
-    private function setCookie(string $name, $value, array $options): void
+    private function setCookie(string $name, string $value): void
     {
-        setcookie(
-            $name,
-            $value,
-            (new Time($options['expire']))->format('U'),
-            $options['path'],
-            $options['domain'],
-            $options['secure'],
-            $options['httpOnly']
-        );
+        $options = $this->getConfig();
+
+        $cookie = $name . '=' . rawurlencode($value);
+        if ($options['expires']) {
+            $cookie .= '; Expires=' . (new Time($options['expires']))->format(DATE_COOKIE);
+        }
+        if ($options['maxAge'] !== null) {
+            $cookie .= '; Max-Age=' . (int)$options['maxAge'];
+        }
+        if ($options['domain']) {
+            $cookie .= '; Domain=' . strtolower($options['domain']);
+        }
+        if ($options['path']) {
+            $cookie .= '; Path=' . $options['path'];
+        }
+        if ($options['secure'] === true) {
+            $cookie .= '; Secure';
+        }
+        if ($options['httpOnly'] === true) {
+            $cookie .= '; HttpOnly';
+        }
+        $sameSite = strtolower($options['sameSite']);
+        if ($sameSite && in_array($sameSite, ['none', 'lax', 'strict'])) {
+            $cookie .= '; SameSite=' . ucfirst($sameSite);
+        }
+
+        $response = $this->getController()->getResponse()->withHeader('Set-Cookie', $cookie);
+        $this->getController()->setResponse($response);
     }
 }
